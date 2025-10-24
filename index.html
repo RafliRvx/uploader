@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>RFP Uploader</title>
+    <link rel="stylesheet" href="/public/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <div class="container">
+        <div class="box">
+            <h1>📁 RFP UPLOADER</h1>
+            <p>Upload files easily - Simple & Fast</p>
+            
+            <form id="uploadForm" class="upload-area">
+                <input type="file" id="fileInput" multiple>
+                <div class="drop-zone">
+                    <span>📤 Drag & drop files or click to browse</span>
+                </div>
+                <button type="submit">UPLOAD</button>
+            </form>
+            
+            <div id="result" class="result-box"></div>
+        </div>
+    </div>
+    
+    <script>
+        const form = document.getElementById('uploadForm');
+        const fileInput = document.getElementById('fileInput');
+        const result = document.getElementById('result');
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const files = fileInput.files;
+            
+            if (files.length === 0) {
+                alert('Pilih file dulu!');
+                return;
+            }
+            
+            for (let file of files) {
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                try {
+                    const response = await fetch('/api/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const data = await response.json();
+                    if (data.success) {
+                        result.innerHTML += `
+                            <div class="link-box">
+                                <strong>${file.name}</strong>
+                                <input value="https://uploader.rfp.vercel.app/${data.filename}" readonly>
+                                <button onclick="copyLink('${data.filename}')">📋 Copy</button>
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    console.error('Upload error:', error);
+                }
+            }
+        });
+        
+        function copyLink(filename) {
+            const link = `https://uploader.rfp.vercel.app/${filename}`;
+            navigator.clipboard.writeText(link);
+            alert('Link copied!');
+        }
+    </script>
+</body>
+</html>
